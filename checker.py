@@ -37,15 +37,15 @@ def serve():
         server.serve_forever()
 
 
-def client():
-    HOST, PORT = "localhost", 8080
+def client(dst_host='localhost', dst_port=8080):
+    HOST, PORT = dst_host, dst_port
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
         client.connect((HOST, PORT))
         client.sendall(b'a' * WRITE_DATA_SIZE)
 
-def long_lasting_client():
-    HOST, PORT = "localhost", 8080
+def long_lasting_client(dst_host='localhost', dst_port=8080):
+    HOST, PORT = dst_host, dst_port
     MAX_TIME = 5
     PAUSE_TIME = 1.4
     SEND_SIZE = 1024 * 1000
@@ -57,8 +57,8 @@ def long_lasting_client():
             client.sendall(b'a' * (SEND_SIZE))
             time.sleep(PAUSE_TIME)
 
-def pausing_client():
-    HOST, PORT = "localhost", 8080
+def pausing_client(dst_host='localhost', dst_port=8080):
+    HOST, PORT = dst_host, dst_port
     PAUSE_TIME = 2
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
@@ -67,8 +67,8 @@ def pausing_client():
         time.sleep(PAUSE_TIME)
         client.sendall(b'a' * (WRITE_DATA_SIZE//2))
 
-def app_limited_client():
-    HOST, PORT = "localhost", 8080
+def app_limited_client(dst_host='localhost', dst_port=8080):
+    HOST, PORT = dst_host, dst_port
     SMALL_SEND_SIZE = 130 * 1024
     INITIAL_SEND = WRITE_DATA_SIZE // 10
     MIDDLE_SEND = INITIAL_SEND
@@ -89,12 +89,8 @@ def send_paced(sock, nbytes, send_size, sleep_time):
         nbytes -= bytes_sent
         time.sleep(sleep_time)
 
-def variant_client_1():
-    """
-    This client is not paced consistently in
-    app limited mode
-    """
-    HOST, PORT = "localhost", 8080
+def variant_client_1(dst_host='localhost', dst_port=8080):
+    HOST, PORT = dst_host, dst_port
     SMALL_SEND_SIZE = 100 * 1024
     BIG_SEND_SIZE = 500 * 1024
     APP_PACERATE = 0.25
@@ -127,22 +123,27 @@ def variant_client_4():
     """
 
 def main():
-    if len(sys.argv) != 2:
-        print(f"Usage: python {__file__} server|client")
+    if len(sys.argv) < 2:
+        print(f"Usage: python {__file__} server|client [destination host] [port]")
         sys.exit(0)
+
+    if len(sys.argv) > 2:
+        dst_host = sys.argv[2]
+        if len(sys.argv) > 3:
+            dst_port = sys.argv[3]
 
     if sys.argv[1] == 'server':
         serve()
     elif sys.argv[1] == 'client':
-        client()
+        client(dst_host=dst_host, dst_port=dst_port)
     elif sys.argv[1] == 'pauser':
-        pausing_client()
+        pausing_client(dst_host=dst_host, dst_port=dst_port)
     elif sys.argv[1] == 'long':
-        long_lasting_client()
+        long_lasting_client(dst_host=dst_host, dst_port=dst_port)
     elif sys.argv[1] == 'app':
-        app_limited_client()
+        app_limited_client(dst_host=dst_host, dst_port=dst_port)
     elif sys.argv[1] == 'var1':
-        variant_client_1()
+        variant_client_1(dst_host=dst_host, dst_port=dst_port)
     else:
         print("Invalid roll")
         sys.exit(0)
