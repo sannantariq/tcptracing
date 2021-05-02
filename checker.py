@@ -130,7 +130,7 @@ def main():
     if len(sys.argv) > 2:
         dst_host = sys.argv[2]
         if len(sys.argv) > 3:
-            dst_port = sys.argv[3]
+            dst_port = int(sys.argv[3])
 
     if sys.argv[1] == 'server':
         serve()
