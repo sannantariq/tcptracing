@@ -128,5 +128,12 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-.vscode/
-validation/
+
+.vscode
+outputs/
+*.pickle
+*.json
+plots/
+*.conf
+figures/
+.DS_Store
