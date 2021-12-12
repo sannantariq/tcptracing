@@ -34,6 +34,7 @@ def serve():
     with socketserver.TCPServer((HOST, PORT), MyTCPHandler) as server:
         # Activate the server; this will keep running until you
         # interrupt the program with Ctrl-C
+        print(f"Serving on {HOST}:{PORT}. Press Ctrl+C to interrupt.")
         server.serve_forever()
 
 
@@ -41,8 +42,11 @@ def client(dst_host='localhost', dst_port=8080):
     HOST, PORT = dst_host, dst_port
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
+        print(f"Connecting to {HOST}:{PORT}")
         client.connect((HOST, PORT))
+        print(f"Writing {WRITE_DATA_SIZE} bytes")
         client.sendall(b'a' * WRITE_DATA_SIZE)
+        print(f"Done.")
 
 def long_lasting_client(dst_host='localhost', dst_port=8080):
     HOST, PORT = dst_host, dst_port
@@ -135,14 +139,19 @@ def main():
     if sys.argv[1] == 'server':
         serve()
     elif sys.argv[1] == 'client':
+        print("Executing basic Client")
         client(dst_host=dst_host, dst_port=dst_port)
     elif sys.argv[1] == 'pauser':
+        print("Executing Pauser Client")
         pausing_client(dst_host=dst_host, dst_port=dst_port)
     elif sys.argv[1] == 'long':
+        print("Executing Long Client")
         long_lasting_client(dst_host=dst_host, dst_port=dst_port)
     elif sys.argv[1] == 'app':
+        print("Executing App Client")
         app_limited_client(dst_host=dst_host, dst_port=dst_port)
     elif sys.argv[1] == 'var1':
+        print("Executing Variation 1 Client")
         variant_client_1(dst_host=dst_host, dst_port=dst_port)
     else:
         print("Invalid roll")
