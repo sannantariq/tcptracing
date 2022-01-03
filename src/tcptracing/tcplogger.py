@@ -63,7 +63,7 @@ def process_and_save(output_path, stats):
 def record_stats(sleep_time):
     stats = []
     while True:
-        output = os.popen('ss -in dport == 8080').readlines()
+        output = os.popen('ss -in dport == 8080 sport == 45000').readlines()
         if len(output) < 3:
             if len(stats) != 0:
                 return stats
