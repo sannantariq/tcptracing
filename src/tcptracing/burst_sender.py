@@ -45,7 +45,7 @@ def client(dst_host='localhost', dst_port=8080, sendtime=40, chunksize=2000000, 
         CHUNKS_SENT = 0
 
         def snd_chunk(p):
-            CHUNKS_SENT += 1
+            
             client.sendall(b'a' * chunksize)
             time.sleep(delay)
 
@@ -56,6 +56,7 @@ def client(dst_host='localhost', dst_port=8080, sendtime=40, chunksize=2000000, 
         start_time = time.time()
         while time.time() < sendtime + start_time:
             snd_chunk("")
+            CHUNKS_SENT += 1
         print(f"Done. {CHUNKS_SENT} chunks sent.")
 
 def main():
