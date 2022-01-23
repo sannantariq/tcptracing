@@ -7,39 +7,7 @@ import time
 
 
 MTU = 1360
-PACKETS_SENT = 0
-
-class TokenBucket:
-
-    def __init__(self, tokens, time_unit, burst_tokens, forward_callback, drop_callback):
-        self.tokens = tokens
-        self.time_unit = time_unit
-        self.forward_callback = forward_callback
-        self.drop_callback = drop_callback
-        self.bucket = tokens
-        self.burst_tokens = burst_tokens
-        self.last_check = time.time()
-        self.forward_calls = 0
-
-    def handle(self, packet):
-        current = time.time()
-        time_passed = current - self.last_check
-        self.last_check = current
-
-        self.bucket = min(self.bucket + \
-            time_passed * (self.tokens / self.time_unit), self.burst_tokens)
-
-        if (self.bucket > self.tokens):
-            self.bucket = self.tokens
-
-        if (self.bucket < 1):
-            self.drop_callback(packet)
-        else:
-            self.bucket = self.bucket - 1
-            self.forward_callback(packet)
-            self.forward_calls += 1
-
-
+CHUNKS_SENT = 0
 
 class MyTCPHandler(socketserver.BaseRequestHandler):
     """
@@ -70,33 +38,29 @@ def serve():
         print(f"Serving on {HOST}:{PORT}. Press Ctrl+C to interrupt.")
         server.serve_forever()
 
-def client(dst_host='localhost', dst_port=8080, sendtime=10, rate=1000000, burst=15000):
+def client(dst_host='localhost', dst_port=8080, sendtime=40, chunksize=2000000, delay=0.75):
     HOST, PORT = dst_host, dst_port
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
         
 
-        def snd_packet(p):
-          client.sendall(b'a' * MTU)
-
-        def drop_packet(p):
-          pass
+        def snd_chunk(p):
+            CHUNKS_SENT += 1
+            client.sendall(b'a' * chunksize)
+            time.sleep(delay)
 
         print(f"Connecting to {HOST}:{PORT}")
         client.connect((HOST, PORT))
 
-        rate_to_send = rate//(MTU*8)
-        burst_size = burst//MTU
-        print(f"Writing at rate {rate} bps for {sendtime} seconds")
-        tb = TokenBucket(rate_to_send, 1, burst_size, snd_packet, drop_packet)
+        print(f"Writing {chunksize} bytes with delay of {delay} seconds for {sendtime} seconds")
         start_time = time.time()
         while time.time() < sendtime + start_time:
-            tb.handle("")
-        print(f"Done. {tb.forward_calls} packets sent.")
+            snd_chunk("")
+        print(f"Done. {CHUNKS_SENT} chunks sent.")
 
 def main():
     if len(sys.argv) < 2:
-        print(f"Usage: python {__file__} server|client host port rate(bps) burst(bytes) duration(seconds)")
+        print(f"Usage: python {__file__} server|client host port chunksize(bytes) delay(seconds) duration(seconds)")
         sys.exit(0)        
 
     if sys.argv[1] == 'server':
@@ -105,10 +69,10 @@ def main():
         print("Executing basic Client")
         dst_host = sys.argv[2]
         dst_port = int(sys.argv[3])
-        send_rate = float(sys.argv[4])
-        send_burst = int(sys.argv[5])
+        chunksize = int(sys.argv[4])
+        delay = float(sys.argv[5])
         send_duration = float(sys.argv[6])
-        client(dst_host=dst_host, dst_port=dst_port, sendtime=send_duration, rate=send_rate, burst=send_burst)
+        client(dst_host=dst_host, dst_port=dst_port, sendtime=send_duration, chunksize=chunksize, delay=delay)
     else:
         print("Invalid roll")
         sys.exit(0)
