@@ -7,7 +7,7 @@ import time
 
 
 MTU = 1360
-CHUNKS_SENT = 0
+RECV_BUFSIZE = 1024 * 100
 
 class MyTCPHandler(socketserver.BaseRequestHandler):
     """
@@ -42,7 +42,7 @@ def client(dst_host='localhost', dst_port=8080, sendtime=40, chunksize=2000000, 
     HOST, PORT = dst_host, dst_port
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
-        
+        CHUNKS_SENT = 0
 
         def snd_chunk(p):
             CHUNKS_SENT += 1
